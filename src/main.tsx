@@ -216,6 +216,7 @@ function App() {
   const handleBattle = () => {
     if (!pendingPlayer || !pendingCpu || phase !== "set") return;
 
+    audio.playButton();
     audio.playCardReveal();
     setPhase("revealing");
     window.setTimeout(() => {
