@@ -36,6 +36,7 @@ type Side = "emperor" | "slave";
 type Result = "player" | "cpu" | "draw";
 type Phase = "select" | "set" | "revealing" | "revealed" | "gameOver";
 type Scene = "start" | "opening" | "game" | "ending";
+type PressedAction = "battle" | "next";
 
 type PlayedCard = {
   id: string;
@@ -114,6 +115,9 @@ function App() {
   const [phase, setPhase] = React.useState<Phase>("select");
   const [lastResult, setLastResult] = React.useState<Result | null>(null);
   const [setAnimationKey, setSetAnimationKey] = React.useState(0);
+  const [pressedAction, setPressedAction] = React.useState<PressedAction | null>(null);
+  const [isAdvancing, setIsAdvancing] = React.useState(false);
+  const buttonEffectTimerRef = React.useRef<number | null>(null);
 
   const turn = Math.min(usedPlayerIds.length + 1, 5);
   const isFinished = phase === "gameOver";
@@ -137,6 +141,26 @@ function App() {
   React.useEffect(() => {
     audio.playBgm(bgmType);
   }, [audio, bgmType]);
+
+  React.useEffect(() => {
+    return () => {
+      if (buttonEffectTimerRef.current !== null) {
+        window.clearTimeout(buttonEffectTimerRef.current);
+      }
+    };
+  }, []);
+
+  const triggerButtonEffect = (action: PressedAction) => {
+    if (buttonEffectTimerRef.current !== null) {
+      window.clearTimeout(buttonEffectTimerRef.current);
+    }
+    setPressedAction(null);
+    window.setTimeout(() => setPressedAction(action), 0);
+    buttonEffectTimerRef.current = window.setTimeout(() => {
+      setPressedAction(null);
+      buttonEffectTimerRef.current = null;
+    }, 420);
+  };
 
   const playerIcon =
     lastResult === "player"
@@ -216,6 +240,7 @@ function App() {
   const handleBattle = () => {
     if (!pendingPlayer || !pendingCpu || phase !== "set") return;
 
+    triggerButtonEffect("battle");
     audio.playButton();
     audio.playCardReveal();
     setPhase("revealing");
@@ -254,12 +279,19 @@ function App() {
   };
 
   const handleNext = () => {
+    if (isAdvancing) return;
+
+    setIsAdvancing(true);
+    triggerButtonEffect("next");
     audio.playButton();
-    if (isFinished) {
-      startGame();
-      return;
-    }
-    startRound(round + 1);
+    window.setTimeout(() => {
+      if (isFinished) {
+        startGame();
+      } else {
+        startRound(round + 1);
+      }
+      setIsAdvancing(false);
+    }, 180);
   };
 
   return (
@@ -289,6 +321,8 @@ function App() {
         <section
           className={`game-stage ${lastResult === "player" ? "win-flash" : ""} ${
             lastResult === "cpu" ? "lose-shake" : ""
+          } ${pressedAction === "battle" ? "battle-button-pressed" : ""} ${
+            pressedAction === "next" ? "next-button-pressed" : ""
           }`}
           aria-label="E-card game"
         >
@@ -410,14 +444,19 @@ function App() {
 
           {(phase === "select" || phase === "set" || phase === "revealing") && (
             <button
-            className="hotspot battle-hotspot"
+              className="hotspot battle-hotspot"
               onClick={handleBattle}
               disabled={phase !== "set"}
               aria-label="Battle"
             />
           )}
           {(phase === "revealed" || phase === "gameOver") && (
-            <button className="hotspot next-hotspot" onClick={handleNext} aria-label={isFinished ? "Replay" : "Next round"} />
+            <button
+              className="hotspot next-hotspot"
+              onClick={handleNext}
+              disabled={isAdvancing}
+              aria-label={isFinished ? "Replay" : "Next round"}
+            />
           )}
         </section>
       )}

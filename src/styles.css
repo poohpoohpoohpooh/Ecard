@@ -393,10 +393,57 @@ button {
   border: 0;
   background: transparent;
   cursor: pointer;
+  overflow: visible;
+  transform-origin: center;
 }
 
 .hotspot:disabled {
   cursor: default;
+}
+
+.hotspot::before,
+.hotspot::after {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+  opacity: 0;
+}
+
+.hotspot::before {
+  inset: 4% 3%;
+  border-radius: 999px;
+  background:
+    linear-gradient(rgba(255, 236, 166, 0.18), rgba(255, 192, 65, 0.08)),
+    radial-gradient(circle at 50% 42%, rgba(255, 255, 220, 0.58), transparent 56%);
+  box-shadow:
+    inset 0 0.34vw 0.58vw rgba(41, 12, 4, 0.62),
+    inset 0 -0.18vw 0.4vw rgba(255, 241, 177, 0.35),
+    0 0 1vw rgba(255, 197, 71, 0.5);
+}
+
+.hotspot::after {
+  inset: -82% -30%;
+  background:
+    radial-gradient(circle at 14% 54%, rgba(255, 245, 190, 0.9) 0 0.42%, transparent 0.95%),
+    radial-gradient(circle at 30% 20%, rgba(255, 196, 73, 0.9) 0 0.38%, transparent 0.9%),
+    radial-gradient(circle at 47% 72%, rgba(255, 255, 255, 0.8) 0 0.34%, transparent 0.8%),
+    radial-gradient(circle at 62% 28%, rgba(255, 220, 118, 0.94) 0 0.4%, transparent 0.92%),
+    radial-gradient(circle at 80% 58%, rgba(255, 244, 188, 0.88) 0 0.38%, transparent 0.88%);
+}
+
+.battle-button-pressed .battle-hotspot,
+.next-button-pressed .next-hotspot {
+  animation: buttonSink 420ms ease-out both;
+}
+
+.battle-button-pressed .battle-hotspot::before,
+.next-button-pressed .next-hotspot::before {
+  animation: royalButtonGlow 420ms ease-out both;
+}
+
+.battle-button-pressed .battle-hotspot::after,
+.next-button-pressed .next-hotspot::after {
+  animation: buttonSparks 420ms ease-out both;
 }
 
 .battle-hotspot {
@@ -547,6 +594,50 @@ button {
   to {
     opacity: 0;
     transform: scale(1.08);
+  }
+}
+
+@keyframes buttonSink {
+  0% {
+    transform: translateY(0) scale(1);
+    filter: brightness(1);
+  }
+  35% {
+    transform: translateY(4%) scale(0.975);
+    filter: brightness(0.82);
+  }
+  100% {
+    transform: translateY(0) scale(1);
+    filter: brightness(1.06);
+  }
+}
+
+@keyframes royalButtonGlow {
+  0% {
+    opacity: 0;
+    transform: scaleX(0.94) scaleY(0.86);
+  }
+  28% {
+    opacity: 0.94;
+    transform: scaleX(0.98) scaleY(0.9);
+  }
+  100% {
+    opacity: 0;
+    transform: scaleX(1.1) scaleY(1.18);
+  }
+}
+
+@keyframes buttonSparks {
+  0% {
+    opacity: 0;
+    transform: translateY(8%) scale(0.88);
+  }
+  35% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-14%) scale(1.08);
   }
 }
 
